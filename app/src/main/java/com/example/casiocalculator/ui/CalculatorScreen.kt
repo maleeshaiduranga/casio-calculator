@@ -11,6 +11,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -26,10 +29,18 @@ import com.example.casiocalculator.ui.theme.*
 fun CalculatorScreen(viewModel: CalculatorViewModel = viewModel()) {
     val state by viewModel.state.collectAsState()
 
+    // Dynamic Colors based on Theme
+    val bgColor = if (state.isDarkMode) Color(0xFF1A1A1A) else Color(0xFFE0E0E0)
+    val displayBgColor = if (state.isDarkMode) Color(0xFF859B73) else Color(0xFF9EAD8B)
+    val btnDarkGrey = if (state.isDarkMode) Color(0xFF111111) else Color(0xFF333333)
+    val btnLightGrey = if (state.isDarkMode) Color(0xFF444444) else Color(0xFFB0B0B0)
+    val textMainColor = if (state.isDarkMode) Color.White else Color.Black
+    val strokeColor = if (state.isDarkMode) Color.Black else Color.DarkGray
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(CalculatorBackground)
+            .background(bgColor)
             .padding(16.dp)
     ) {
         // Top Brand & Mode Area
@@ -38,18 +49,36 @@ fun CalculatorScreen(viewModel: CalculatorViewModel = viewModel()) {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = "CASIO",
-                fontWeight = FontWeight.Bold,
-                fontSize = 20.sp,
-                color = TextBlack
-            )
-            Text(
-                text = "fx-991ES PLUS",
-                fontSize = 14.sp,
-                color = TextBlack,
-                fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
-            )
+            Column {
+                Text(
+                    text = "SCICALC",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp,
+                    color = textMainColor
+                )
+                Text(
+                    text = "PRO-991",
+                    fontSize = 14.sp,
+                    color = textMainColor,
+                    fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
+                )
+            }
+            
+            // Theme Toggle Button
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(btnDarkGrey)
+                    .clickable { viewModel.onEvent(CalculatorEvent.ToggleTheme) }
+                    .padding(horizontal = 12.dp, vertical = 6.dp)
+            ) {
+                Text(
+                    text = if (state.isDarkMode) "☀️ Light" else "🌙 Dark",
+                    color = Color.White,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -60,7 +89,7 @@ fun CalculatorScreen(viewModel: CalculatorViewModel = viewModel()) {
                 .fillMaxWidth()
                 .height(140.dp)
                 .clip(RoundedCornerShape(8.dp))
-                .background(DisplayBackground)
+                .background(displayBgColor)
                 .padding(12.dp)
         ) {
             // Status indicators
@@ -68,29 +97,27 @@ fun CalculatorScreen(viewModel: CalculatorViewModel = viewModel()) {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                if (state.isShift) StatusIndicator("S", TextBlack)
-                if (state.isAlpha) StatusIndicator("A", TextBlack)
-                StatusIndicator(state.angleMode.name, TextBlack)
+                if (state.isShift) StatusIndicator("S", Color.Black)
+                if (state.isAlpha) StatusIndicator("A", Color.Black)
+                StatusIndicator(state.angleMode.name, Color.Black)
             }
             Spacer(modifier = Modifier.weight(1f))
-            // Input string
             Text(
                 text = state.input,
                 fontSize = 28.sp,
                 fontFamily = FontFamily.Monospace,
-                color = TextBlack,
+                color = Color.Black,
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Start,
                 maxLines = 2
             )
             Spacer(modifier = Modifier.height(8.dp))
-            // Result string
             Text(
                 text = state.result,
                 fontSize = 32.sp,
                 fontWeight = FontWeight.Bold,
                 fontFamily = FontFamily.Monospace,
-                color = TextBlack,
+                color = Color.Black,
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.End,
                 maxLines = 1
@@ -105,43 +132,40 @@ fun CalculatorScreen(viewModel: CalculatorViewModel = viewModel()) {
             verticalArrangement = Arrangement.SpaceEvenly
         ) {
             // Row 1: SHIFT, ALPHA, MODE
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                SmallFunctionButton("SHIFT", TextYellow, onClick = { viewModel.onEvent(CalculatorEvent.ToggleShift) })
-                SmallFunctionButton("ALPHA", TextPurple, onClick = { viewModel.onEvent(CalculatorEvent.ToggleAlpha) })
-                SmallFunctionButton("MODE", TextWhite, onClick = { viewModel.onEvent(CalculatorEvent.ToggleAngleMode) })
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                SmallFunctionButton("SHIFT", TextYellow, btnDarkGrey, strokeColor, onClick = { viewModel.onEvent(CalculatorEvent.ToggleShift) })
+                SmallFunctionButton("ALPHA", TextPurple, btnDarkGrey, strokeColor, onClick = { viewModel.onEvent(CalculatorEvent.ToggleAlpha) })
+                SmallFunctionButton("MODE", textMainColor, btnDarkGrey, strokeColor, onClick = { viewModel.onEvent(CalculatorEvent.ToggleAngleMode) })
             }
 
             // Row 2: Scientific 1
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                ScientificButton("x⁻¹", shift = "x!", onClick = { viewModel.onEvent(CalculatorEvent.KeyPress("^(-1)")) })
-                ScientificButton("√", shift = "³√", onClick = { viewModel.onEvent(CalculatorEvent.KeyPress("√(")) })
-                ScientificButton("x²", shift = "³√", onClick = { viewModel.onEvent(CalculatorEvent.KeyPress("^2")) })
-                ScientificButton("x^", shift = "x√", onClick = { viewModel.onEvent(CalculatorEvent.KeyPress("^")) })
-                ScientificButton("log", shift = "10^", onClick = { viewModel.onEvent(CalculatorEvent.KeyPress("log10(")) })
-                ScientificButton("ln", shift = "e^", onClick = { viewModel.onEvent(CalculatorEvent.KeyPress("ln(")) })
+                ScientificButton("x⁻¹", btnDarkGrey, strokeColor, shift = "x!", onClick = { viewModel.onEvent(CalculatorEvent.KeyPress("^(-1)")) })
+                ScientificButton("√", btnDarkGrey, strokeColor, shift = "³√", onClick = { viewModel.onEvent(CalculatorEvent.KeyPress("√(")) })
+                ScientificButton("x²", btnDarkGrey, strokeColor, shift = "³√", onClick = { viewModel.onEvent(CalculatorEvent.KeyPress("^2")) })
+                ScientificButton("x^", btnDarkGrey, strokeColor, shift = "x√", onClick = { viewModel.onEvent(CalculatorEvent.KeyPress("^")) })
+                ScientificButton("log", btnDarkGrey, strokeColor, shift = "10^", onClick = { viewModel.onEvent(CalculatorEvent.KeyPress("log10(")) })
+                ScientificButton("ln", btnDarkGrey, strokeColor, shift = "e^", onClick = { viewModel.onEvent(CalculatorEvent.KeyPress("ln(")) })
             }
 
             // Row 3: Scientific 2
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                ScientificButton("(-)", shift = "A", alpha = "A", onClick = { viewModel.onEvent(CalculatorEvent.KeyPress("-")) })
-                ScientificButton("o'\"", shift = "B", alpha = "B", onClick = { viewModel.onEvent(CalculatorEvent.KeyPress("°")) })
-                ScientificButton("hyp", shift = "C", alpha = "C", onClick = { /* Not fully implemented */ })
-                ScientificButton("sin", shift = "sin⁻¹", alpha = "D", onClick = { viewModel.onEvent(CalculatorEvent.KeyPress("sin(")) })
-                ScientificButton("cos", shift = "cos⁻¹", alpha = "E", onClick = { viewModel.onEvent(CalculatorEvent.KeyPress("cos(")) })
-                ScientificButton("tan", shift = "tan⁻¹", alpha = "F", onClick = { viewModel.onEvent(CalculatorEvent.KeyPress("tan(")) })
+                ScientificButton("(-)", btnDarkGrey, strokeColor, shift = "A", alpha = "A", onClick = { viewModel.onEvent(CalculatorEvent.KeyPress("-")) })
+                ScientificButton("o'\"", btnDarkGrey, strokeColor, shift = "B", alpha = "B", onClick = { viewModel.onEvent(CalculatorEvent.KeyPress("°")) })
+                ScientificButton("hyp", btnDarkGrey, strokeColor, shift = "C", alpha = "C", onClick = { /* Not fully implemented */ })
+                ScientificButton("sin", btnDarkGrey, strokeColor, shift = "sin⁻¹", alpha = "D", onClick = { viewModel.onEvent(CalculatorEvent.KeyPress("sin(")) })
+                ScientificButton("cos", btnDarkGrey, strokeColor, shift = "cos⁻¹", alpha = "E", onClick = { viewModel.onEvent(CalculatorEvent.KeyPress("cos(")) })
+                ScientificButton("tan", btnDarkGrey, strokeColor, shift = "tan⁻¹", alpha = "F", onClick = { viewModel.onEvent(CalculatorEvent.KeyPress("tan(")) })
             }
 
             // Row 4: Scientific 3
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                ScientificButton("RCL", shift = "STO", onClick = { /* Not fully implemented */ })
-                ScientificButton("ENG", shift = "←", onClick = { /* Not fully implemented */ })
-                ScientificButton("(", shift = "[", onClick = { viewModel.onEvent(CalculatorEvent.KeyPress("(")) })
-                ScientificButton(")", shift = "]", alpha = "X", onClick = { viewModel.onEvent(CalculatorEvent.KeyPress(")")) })
-                ScientificButton("S⇔D", onClick = { /* Not fully implemented */ })
-                ScientificButton("M+", shift = "M-", alpha = "M", onClick = { /* Not fully implemented */ })
+                ScientificButton("RCL", btnDarkGrey, strokeColor, shift = "STO", onClick = { /* Not fully implemented */ })
+                ScientificButton("ENG", btnDarkGrey, strokeColor, shift = "←", onClick = { /* Not fully implemented */ })
+                ScientificButton("(", btnDarkGrey, strokeColor, shift = "[", onClick = { viewModel.onEvent(CalculatorEvent.KeyPress("(")) })
+                ScientificButton(")", btnDarkGrey, strokeColor, shift = "]", alpha = "X", onClick = { viewModel.onEvent(CalculatorEvent.KeyPress(")")) })
+                ScientificButton("S⇔D", btnDarkGrey, strokeColor, onClick = { /* Not fully implemented */ })
+                ScientificButton("M+", btnDarkGrey, strokeColor, shift = "M-", alpha = "M", onClick = { /* Not fully implemented */ })
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -151,35 +175,35 @@ fun CalculatorScreen(viewModel: CalculatorViewModel = viewModel()) {
             Column(verticalArrangement = Arrangement.spacedBy(numpadSpacing)) {
                 // Row 1
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(numpadSpacing)) {
-                    NumpadButton("7", Modifier.weight(1f), onClick = { viewModel.onEvent(CalculatorEvent.KeyPress("7")) })
-                    NumpadButton("8", Modifier.weight(1f), onClick = { viewModel.onEvent(CalculatorEvent.KeyPress("8")) })
-                    NumpadButton("9", Modifier.weight(1f), onClick = { viewModel.onEvent(CalculatorEvent.KeyPress("9")) })
-                    NumpadButton("DEL", Modifier.weight(1f), color = ButtonBlue, textColor = TextWhite, onClick = { viewModel.onEvent(CalculatorEvent.Delete) })
-                    NumpadButton("AC", Modifier.weight(1f), color = ButtonBlue, textColor = TextWhite, onClick = { viewModel.onEvent(CalculatorEvent.Clear) })
+                    NumpadButton("7", Modifier.weight(1f), btnLightGrey, textMainColor, strokeColor, onClick = { viewModel.onEvent(CalculatorEvent.KeyPress("7")) })
+                    NumpadButton("8", Modifier.weight(1f), btnLightGrey, textMainColor, strokeColor, onClick = { viewModel.onEvent(CalculatorEvent.KeyPress("8")) })
+                    NumpadButton("9", Modifier.weight(1f), btnLightGrey, textMainColor, strokeColor, onClick = { viewModel.onEvent(CalculatorEvent.KeyPress("9")) })
+                    NumpadButton("DEL", Modifier.weight(1f), ButtonBlue, Color.White, strokeColor, onClick = { viewModel.onEvent(CalculatorEvent.Delete) })
+                    NumpadButton("AC", Modifier.weight(1f), ButtonBlue, Color.White, strokeColor, onClick = { viewModel.onEvent(CalculatorEvent.Clear) })
                 }
                 // Row 2
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(numpadSpacing)) {
-                    NumpadButton("4", Modifier.weight(1f), onClick = { viewModel.onEvent(CalculatorEvent.KeyPress("4")) })
-                    NumpadButton("5", Modifier.weight(1f), onClick = { viewModel.onEvent(CalculatorEvent.KeyPress("5")) })
-                    NumpadButton("6", Modifier.weight(1f), onClick = { viewModel.onEvent(CalculatorEvent.KeyPress("6")) })
-                    NumpadButton("×", Modifier.weight(1f), onClick = { viewModel.onEvent(CalculatorEvent.KeyPress("×")) })
-                    NumpadButton("÷", Modifier.weight(1f), onClick = { viewModel.onEvent(CalculatorEvent.KeyPress("÷")) })
+                    NumpadButton("4", Modifier.weight(1f), btnLightGrey, textMainColor, strokeColor, onClick = { viewModel.onEvent(CalculatorEvent.KeyPress("4")) })
+                    NumpadButton("5", Modifier.weight(1f), btnLightGrey, textMainColor, strokeColor, onClick = { viewModel.onEvent(CalculatorEvent.KeyPress("5")) })
+                    NumpadButton("6", Modifier.weight(1f), btnLightGrey, textMainColor, strokeColor, onClick = { viewModel.onEvent(CalculatorEvent.KeyPress("6")) })
+                    NumpadButton("×", Modifier.weight(1f), btnLightGrey, textMainColor, strokeColor, onClick = { viewModel.onEvent(CalculatorEvent.KeyPress("×")) })
+                    NumpadButton("÷", Modifier.weight(1f), btnLightGrey, textMainColor, strokeColor, onClick = { viewModel.onEvent(CalculatorEvent.KeyPress("÷")) })
                 }
                 // Row 3
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(numpadSpacing)) {
-                    NumpadButton("1", Modifier.weight(1f), onClick = { viewModel.onEvent(CalculatorEvent.KeyPress("1")) })
-                    NumpadButton("2", Modifier.weight(1f), onClick = { viewModel.onEvent(CalculatorEvent.KeyPress("2")) })
-                    NumpadButton("3", Modifier.weight(1f), onClick = { viewModel.onEvent(CalculatorEvent.KeyPress("3")) })
-                    NumpadButton("+", Modifier.weight(1f), onClick = { viewModel.onEvent(CalculatorEvent.KeyPress("+")) })
-                    NumpadButton("-", Modifier.weight(1f), onClick = { viewModel.onEvent(CalculatorEvent.KeyPress("-")) })
+                    NumpadButton("1", Modifier.weight(1f), btnLightGrey, textMainColor, strokeColor, onClick = { viewModel.onEvent(CalculatorEvent.KeyPress("1")) })
+                    NumpadButton("2", Modifier.weight(1f), btnLightGrey, textMainColor, strokeColor, onClick = { viewModel.onEvent(CalculatorEvent.KeyPress("2")) })
+                    NumpadButton("3", Modifier.weight(1f), btnLightGrey, textMainColor, strokeColor, onClick = { viewModel.onEvent(CalculatorEvent.KeyPress("3")) })
+                    NumpadButton("+", Modifier.weight(1f), btnLightGrey, textMainColor, strokeColor, onClick = { viewModel.onEvent(CalculatorEvent.KeyPress("+")) })
+                    NumpadButton("-", Modifier.weight(1f), btnLightGrey, textMainColor, strokeColor, onClick = { viewModel.onEvent(CalculatorEvent.KeyPress("-")) })
                 }
                 // Row 4
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(numpadSpacing)) {
-                    NumpadButton("0", Modifier.weight(1f), onClick = { viewModel.onEvent(CalculatorEvent.KeyPress("0")) })
-                    NumpadButton(".", Modifier.weight(1f), onClick = { viewModel.onEvent(CalculatorEvent.KeyPress(".")) })
-                    NumpadButton("×10ˣ", Modifier.weight(1f), onClick = { viewModel.onEvent(CalculatorEvent.KeyPress("×10^")) })
-                    NumpadButton("Ans", Modifier.weight(1f), onClick = { viewModel.onEvent(CalculatorEvent.KeyPress("Ans")) })
-                    NumpadButton("=", Modifier.weight(1f), onClick = { viewModel.onEvent(CalculatorEvent.Calculate) })
+                    NumpadButton("0", Modifier.weight(1f), btnLightGrey, textMainColor, strokeColor, onClick = { viewModel.onEvent(CalculatorEvent.KeyPress("0")) })
+                    NumpadButton(".", Modifier.weight(1f), btnLightGrey, textMainColor, strokeColor, onClick = { viewModel.onEvent(CalculatorEvent.KeyPress(".")) })
+                    NumpadButton("×10ˣ", Modifier.weight(1f), btnLightGrey, textMainColor, strokeColor, onClick = { viewModel.onEvent(CalculatorEvent.KeyPress("×10^")) })
+                    NumpadButton("Ans", Modifier.weight(1f), btnLightGrey, textMainColor, strokeColor, onClick = { viewModel.onEvent(CalculatorEvent.KeyPress("Ans")) })
+                    NumpadButton("=", Modifier.weight(1f), btnLightGrey, textMainColor, strokeColor, onClick = { viewModel.onEvent(CalculatorEvent.Calculate) })
                 }
             }
         }
@@ -187,24 +211,36 @@ fun CalculatorScreen(viewModel: CalculatorViewModel = viewModel()) {
 }
 
 @Composable
-fun StatusIndicator(text: String, color: androidx.compose.ui.graphics.Color) {
+fun StatusIndicator(text: String, color: Color) {
     Text(text = text, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = color)
 }
 
 @Composable
-fun SmallFunctionButton(text: String, textColor: androidx.compose.ui.graphics.Color, onClick: () -> Unit) {
+fun BorderedText(text: String, fillColor: Color, strokeColor: Color, fontSize: androidx.compose.ui.unit.TextUnit, fontWeight: FontWeight? = null) {
+    Box(contentAlignment = Alignment.Center) {
+        Text(
+            text = text, 
+            color = strokeColor, 
+            fontSize = fontSize, 
+            fontWeight = fontWeight,
+            style = TextStyle(drawStyle = Stroke(width = 3f))
+        )
+        Text(text = text, color = fillColor, fontSize = fontSize, fontWeight = fontWeight)
+    }
+}
+
+@Composable
+fun SmallFunctionButton(text: String, textColor: Color, bgColor: Color, strokeColor: Color, onClick: () -> Unit) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Box(
             modifier = Modifier
                 .size(40.dp, 20.dp)
                 .clip(RoundedCornerShape(10.dp))
-                .background(ButtonDarkGrey)
+                .background(bgColor)
                 .clickable { onClick() },
             contentAlignment = Alignment.Center
         ) {
-            // Nothing inside the small pill button for these top ones usually, text is around or inside
-            // But we'll put text inside for simplicity
-            Text(text = text, color = textColor, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+            BorderedText(text = text, fillColor = textColor, strokeColor = strokeColor, fontSize = 10.sp, fontWeight = FontWeight.Bold)
         }
     }
 }
@@ -212,6 +248,8 @@ fun SmallFunctionButton(text: String, textColor: androidx.compose.ui.graphics.Co
 @Composable
 fun ScientificButton(
     primary: String,
+    bgColor: Color,
+    strokeColor: Color,
     shift: String? = null,
     alpha: String? = null,
     onClick: () -> Unit
@@ -224,19 +262,27 @@ fun ScientificButton(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            Text(text = shift ?: "", color = TextYellow, fontSize = 10.sp)
-            Text(text = alpha ?: "", color = TextPurple, fontSize = 10.sp)
+            if (shift != null) {
+                BorderedText(text = shift, fillColor = TextYellow, strokeColor = strokeColor, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+            } else {
+                Text(text = "", fontSize = 11.sp)
+            }
+            if (alpha != null) {
+                BorderedText(text = alpha, fillColor = TextPurple, strokeColor = strokeColor, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+            } else {
+                Text(text = "", fontSize = 11.sp)
+            }
         }
         Spacer(modifier = Modifier.height(2.dp))
         Box(
             modifier = Modifier
                 .size(45.dp, 35.dp)
                 .clip(RoundedCornerShape(4.dp))
-                .background(ButtonDarkGrey)
+                .background(bgColor)
                 .clickable { onClick() },
             contentAlignment = Alignment.Center
         ) {
-            Text(text = primary, color = TextWhite, fontSize = 14.sp)
+            BorderedText(text = primary, fillColor = Color.White, strokeColor = strokeColor, fontSize = 14.sp)
         }
     }
 }
@@ -245,18 +291,19 @@ fun ScientificButton(
 fun NumpadButton(
     text: String,
     modifier: Modifier = Modifier,
-    color: androidx.compose.ui.graphics.Color = ButtonLightGrey,
-    textColor: androidx.compose.ui.graphics.Color = TextBlack,
+    bgColor: Color,
+    textColor: Color,
+    strokeColor: Color,
     onClick: () -> Unit
 ) {
     Box(
         modifier = modifier
             .height(55.dp)
             .clip(RoundedCornerShape(8.dp))
-            .background(color)
+            .background(bgColor)
             .clickable { onClick() },
         contentAlignment = Alignment.Center
     ) {
-        Text(text = text, color = textColor, fontSize = 20.sp, fontWeight = FontWeight.Medium)
+        BorderedText(text = text, fillColor = textColor, strokeColor = strokeColor, fontSize = 20.sp, fontWeight = FontWeight.Medium)
     }
 }

@@ -17,7 +17,8 @@ data class CalculatorState(
     val isShift: Boolean = false,
     val isAlpha: Boolean = false,
     val angleMode: AngleMode = AngleMode.DEG,
-    val memory: String = "0"
+    val memory: String = "0",
+    val isDarkMode: Boolean = false
 )
 
 class CalculatorViewModel : ViewModel() {
@@ -35,6 +36,7 @@ class CalculatorViewModel : ViewModel() {
             is CalculatorEvent.ToggleShift -> toggleShift()
             is CalculatorEvent.ToggleAlpha -> toggleAlpha()
             is CalculatorEvent.ToggleAngleMode -> toggleAngleMode()
+            is CalculatorEvent.ToggleTheme -> toggleTheme()
         }
     }
 
@@ -84,6 +86,10 @@ class CalculatorViewModel : ViewModel() {
             it.copy(angleMode = if (it.angleMode == AngleMode.DEG) AngleMode.RAD else AngleMode.DEG) 
         }
     }
+
+    private fun toggleTheme() {
+        _state.update { it.copy(isDarkMode = !it.isDarkMode) }
+    }
 }
 
 sealed class CalculatorEvent {
@@ -94,4 +100,5 @@ sealed class CalculatorEvent {
     object ToggleShift : CalculatorEvent()
     object ToggleAlpha : CalculatorEvent()
     object ToggleAngleMode : CalculatorEvent()
+    object ToggleTheme : CalculatorEvent()
 }

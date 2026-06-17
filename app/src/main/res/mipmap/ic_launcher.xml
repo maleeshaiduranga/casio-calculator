@@ -19,14 +19,19 @@
         android:fillColor="#9EAD8B" 
         android:pathData="M38,28 h32 v16 h-32 z"/>
         
-    <!-- Button Grid -->
+    <!-- Button Grid Row 1 -->
     <path android:fillColor="#E0E0E0" android:pathData="M38,50 h8 v6 h-8 z" />
     <path android:fillColor="#E0E0E0" android:pathData="M50,50 h8 v6 h-8 z" />
     <path android:fillColor="#E0E0E0" android:pathData="M62,50 h8 v6 h-8 z" />
+    
+    <!-- Button Grid Row 2 -->
     <path android:fillColor="#E0E0E0" android:pathData="M38,60 h8 v6 h-8 z" />
     <path android:fillColor="#E0E0E0" android:pathData="M50,60 h8 v6 h-8 z" />
     <path android:fillColor="#E0E0E0" android:pathData="M62,60 h8 v6 h-8 z" />
+    
+    <!-- Button Grid Row 3 -->
     <path android:fillColor="#E0E0E0" android:pathData="M38,70 h8 v6 h-8 z" />
     <path android:fillColor="#E0E0E0" android:pathData="M50,70 h8 v6 h-8 z" />
     <path android:fillColor="#4C5B79" android:pathData="M62,70 h8 v6 h-8 z" />
+
 </vector>
