@@ -6,7 +6,7 @@ A complete, native Android application that replicates the layout of a classic s
 
 Click the button below to download the latest Android APK directly:
 
-[![Download APK](https://img.shields.io/badge/Download-APK-green?style=for-the-badge&logo=android)](https://github.com/YourUsername/casio-calculator/releases/download/latest/app-debug.apk)
+[![Download APK](https://img.shields.io/badge/Download-APK-green?style=for-the-badge&logo=android)](https://github.com/maleeshaiduranga/casio-calculator/releases/download/latest/app-debug.apk)
 
 *(Make sure to enable "Install from Unknown Sources" on your device if prompted)*
 
